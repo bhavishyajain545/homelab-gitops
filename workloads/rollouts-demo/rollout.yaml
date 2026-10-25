@@ -1,0 +1,57 @@
+# Canary demo: change the image tag in Git -> Argo CD syncs -> Argo Rollouts
+# shifts 25% -> 50% -> 100% of replicas with pauses in between.
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: podinfo
+  labels:
+    app.kubernetes.io/name: podinfo
+spec:
+  replicas: 4
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: podinfo
+  strategy:
+    canary:
+      canaryService: podinfo-canary
+      stableService: podinfo-stable
+      maxSurge: 1
+      maxUnavailable: 0
+      steps:
+        - setWeight: 25
+        - pause: { duration: 2m }
+        - setWeight: 50
+        - pause: { duration: 2m }
+        - setWeight: 100
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: podinfo
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 100
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: podinfo
+          image: ghcr.io/stefanprodan/podinfo:6.14.1
+          ports:
+            - { name: http, containerPort: 9898 }
+          command: ["./podinfo", "--port=9898", "--level=info"]
+          env:
+            - name: PODINFO_UI_MESSAGE
+              value: "Delivered by Argo Rollouts canary"
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 10
+          resources:
+            requests: { cpu: 5m, memory: 16Mi }
+            limits:   { memory: 64Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
