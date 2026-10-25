@@ -62,6 +62,14 @@ bootstrap/root-app.yaml      <- the only manifest applied by hand
 All Applications use automated sync with `prune` + `selfHeal`, so the cluster is
 whatever `main` says (except Argo CD itself, which never auto-prunes).
 
+## Screenshots
+
+Live, read-only: <https://argocd.futurnex.io>
+
+| Applications | App-of-apps tree | Canary rollout |
+|---|---|---|
+| ![Argo CD applications](docs/argocd-apps.png) | ![root app-of-apps tree](docs/app-of-apps-tree.png) | ![Argo Rollouts canary](docs/canary-rollout.png) |
+
 ## Repository layout
 
 | Path | What |
