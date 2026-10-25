@@ -1,0 +1,66 @@
+# Values for the argo-cd Helm chart (pinned in apps/argocd.yaml and bootstrap/common.sh).
+# Argo CD manages itself from this file after bootstrap.
+global:
+  domain: argocd.futurnex.io
+
+configs:
+  params:
+    # TLS is terminated by the Docker Traefik in front of the cluster
+    server.insecure: true
+  cm:
+    # Recruiters / visitors can browse without logging in (read-only, see rbac below)
+    users.anonymous.enabled: "true"
+    admin.enabled: "true"
+    exec.enabled: "false"
+    statusbadge.enabled: "true"
+    timeout.reconciliation: 180s
+    ui.bannercontent: "Read-only public demo of a GitOps homelab - source: github.com/bhavishyajain545/homelab-gitops"
+    ui.bannerurl: "https://github.com/bhavishyajain545/homelab-gitops"
+    ui.bannerpermanent: "true"
+  rbac:
+    # Anonymous users fall back to this role. Deliberately narrower than the
+    # built-in role:readonly: no pod logs, no exec, no actions, no sync.
+    policy.default: role:public
+    policy.csv: |
+      p, role:public, applications, get, */*, allow
+      p, role:public, applicationsets, get, */*, allow
+      p, role:public, projects, get, *, allow
+      p, role:public, clusters, get, *, allow
+      p, role:public, repositories, get, *, allow
+      p, role:public, logs, get, */*, deny
+      p, role:public, exec, create, */*, deny
+  secret:
+    # argocd-secret (incl. the bcrypt admin password) is created by
+    # bootstrap/20-argocd.sh on the server and never stored in Git.
+    createSecret: false
+
+dex:
+  enabled: false
+notifications:
+  enabled: false
+applicationSet:
+  replicas: 0          # app-of-apps only; saves ~60 MiB
+
+controller:
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits:   { memory: 768Mi }
+
+repoServer:
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits:   { memory: 512Mi }
+
+server:
+  service:
+    type: NodePort
+    nodePortHttp: 30080
+    nodePortHttps: 30443
+  resources:
+    requests: { cpu: 25m, memory: 64Mi }
+    limits:   { memory: 256Mi }
+
+redis:
+  resources:
+    requests: { cpu: 10m, memory: 32Mi }
+    limits:   { memory: 128Mi }
