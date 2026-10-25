@@ -26,4 +26,4 @@ proxy_gateway() {
   docker network inspect "$DOCKER_PROXY_NET" -f '{{(index .IPAM.Config 0).Gateway}}'
 }
 
-rand_password() { tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32; }
+rand_password() { python3 -c 'import secrets; print(secrets.token_urlsafe(24))'; }
