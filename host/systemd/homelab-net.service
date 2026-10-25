@@ -1,0 +1,13 @@
+[Unit]
+Description=Private dummy interface (k3s0) for k3s
+After=network-online.target
+Wants=network-online.target
+Before=k3s.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/homelab-net.sh
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,30 @@
+# /etc/rancher/k3s/config.yaml -- rendered by bootstrap/10-k3s.sh
+#
+# Goal: a single-node cluster that never listens on the public interface.
+#  * node / API / kubelet bind to a private dummy interface (k3s0, 10.240.0.1)
+#  * NodePorts only answer on the Docker "proxy" bridge gateway, so the
+#    existing Docker Traefik is the only way in (via 443)
+#  * the bundled Traefik and ServiceLB are disabled: ports 80/443 belong to Docker
+write-kubeconfig-mode: "0600"
+node-ip: __NODE_IP__
+advertise-address: __NODE_IP__
+bind-address: __NODE_IP__
+tls-san:
+  - __NODE_IP__
+flannel-iface: k3s0
+flannel-backend: host-gw          # single node: no VXLAN listener (udp/8472)
+disable:
+  - traefik
+  - servicelb
+kubelet-arg:
+  - "address=__NODE_IP__"
+  - "healthz-bind-address=127.0.0.1"
+  - "max-pods=60"
+kube-proxy-arg:
+  - "nodeport-addresses=__NODEPORT_CIDR__"
+  - "healthz-bind-address=127.0.0.1:10256"
+  - "metrics-bind-address=127.0.0.1:10249"
+kube-controller-manager-arg:
+  - "bind-address=127.0.0.1"
+kube-scheduler-arg:
+  - "bind-address=127.0.0.1"

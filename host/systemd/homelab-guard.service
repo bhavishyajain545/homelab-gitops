@@ -1,0 +1,13 @@
+[Unit]
+Description=Drop Kubernetes ports on the public interface (raw table safety net)
+After=network-online.target docker.service
+Wants=network-online.target
+Before=k3s.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/homelab-guard.sh
+
+[Install]
+WantedBy=multi-user.target
