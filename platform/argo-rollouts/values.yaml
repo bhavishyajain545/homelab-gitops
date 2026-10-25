@@ -6,6 +6,6 @@ controller:
   metrics:
     enabled: true
     serviceMonitor:
-      enabled: false   # flip to true once kube-prometheus-stack CRDs exist
+      enabled: true    # scraped by kube-prometheus-stack (observability-slo-stack)
 dashboard:
   enabled: false       # the Argo CD UI already shows Rollout status
