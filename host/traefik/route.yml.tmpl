@@ -1,0 +1,27 @@
+# Rendered by host/traefik/dns-gate.sh into the Docker Traefik's file-provider
+# directory. Routes https://__HOST__ to a k3s NodePort that only listens on the
+# Docker "proxy" bridge gateway (__GW__), i.e. it is reachable from the Traefik
+# container but not from the internet.
+http:
+  routers:
+    __NAME__:
+      rule: "Host(`__HOST__`)"
+      entryPoints: [websecure]
+      service: __NAME__
+      middlewares: [__NAME__-headers]
+      tls:
+        certResolver: letsencrypt
+  middlewares:
+    __NAME__-headers:
+      headers:
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        contentTypeNosniff: true
+        frameDeny: true
+        referrerPolicy: strict-origin-when-cross-origin
+  services:
+    __NAME__:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://__GW__:__PORT__"

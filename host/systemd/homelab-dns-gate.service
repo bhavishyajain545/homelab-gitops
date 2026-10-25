@@ -1,0 +1,7 @@
+[Unit]
+Description=Enable Traefik routes for k3s apps once their DNS resolves here
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/src/homelab-gitops/host/traefik/dns-gate.sh
